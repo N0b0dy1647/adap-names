@@ -39,7 +39,6 @@ export class Name {
         return unmaskComponets.join(delimiter);
     }
 
-    
     /** 
      * Returns a machine-readable representation of Name instance using default special characters
      * Machine-readable means that from a data string, a Name can be parsed back in
