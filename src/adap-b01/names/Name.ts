@@ -21,14 +21,10 @@ export class Name {
     private components: string[] = [];
 
     /** Expects that all Name components are properly masked */
+    // @methodtype Initialization Method 
     constructor(other: string[], delimiter?: string) {
         this.delimiter = delimiter ?? this.delimiter;
-
-        if(typeof other === 'string'){
-           this.components = this.parseDataString(other, this.delimiter);
-        }else{
-            this.components = other 
-        }
+        this.components= [...other];
     }
 
     /**
@@ -36,9 +32,11 @@ export class Name {
      * Special characters are not escaped (creating a human-readable string)
      * Users can vary the delimiter character to be used
      */
+    // @methodtype conversion-method
     public asString(delimiter: string = this.delimiter): string {
         //throw new Error("needs implementation or deletion");
-        return this.components.join(delimiter);
+        const unmaskComponets = this.components.map(comp => this.asUnmask(comp));
+        return unmaskComponets.join(delimiter);
     }
 
     /** 
@@ -46,12 +44,22 @@ export class Name {
      * Machine-readable means that from a data string, a Name can be parsed back in
      * The special characters in the data string are the default characters
      */
+    // @methodtype conversion-method
     public asDataString(): string {
-        return this.components.map(c=> this.escapeComponent(c)).join(this.delimiter);
+        if (this.delimiter === DEFAULT_DELIMITER){
+            return this.components.join(DEFAULT_DELIMITER);
+        }
+        const remappedComponents = this.components.map(comp => {
+            const unmasked = this.asUnmask(comp);
+            return this.asMask(unmasked, DEFAULT_DELIMITER );
+
+        });
+        return remappedComponents.join(DEFAULT_DELIMITER);
         //throw new Error("needs implementation or deletion");
     }
 
     /** Returns properly masked component string */
+    // @methodetype get-methode
     public getComponent(i: number): string {
         //throw new Error("needs implementation or deletion");
         this.indexBouncerDetector(i);
@@ -59,6 +67,7 @@ export class Name {
     }
 
     /** Expects that new Name component c is properly masked */
+    // @methodetype set-methode
     public setComponent(i: number, c: string): void {
         //throw new Error("needs implementation or deletion");
         this.indexBouncerDetector(i);
@@ -66,45 +75,67 @@ export class Name {
     }
 
      /** Returns number of components in Name instance */
+     // @methodetype get-methode
      public getNoComponents(): number {
         //throw new Error("needs implementation or deletion");
         return this.components.length;
     }
 
     /** Expects that new Name component c is properly masked */
+    // @methodtype command-method
     public insert(i: number, c: string): void {
         //throw new Error("needs implementation or deletion");
-        this.indexBouncerDetector(i);
+        if(i < 0 || i > this.components.length){
+            throw new RangeError(`Index ${i} out of bounds for Name with ${this.components.length} components`);   
+        }
         this.components.splice(i, 0, c);
     }
 
     /** Expects that new Name component c is properly masked */
+    // @methodtype command-method
     public append(c: string): void {
         //throw new Error("needs implementation or deletion");
         this.components.push(c);
     }
-
+    // @methodtype command-method
     public remove(i: number): void {
         //throw new Error("needs implementation or deletion");
         this.indexBouncerDetector(i);
         this.components.splice(i,1);
     }
 //====== Privat Helper Functions ======//
-
-    private parseDataString(data: string, delimiter:string): string[] {
-        let res = [''], esc = false;
-        for(const ch of data) esc ? (res[res.length-1] +=ch, esc= false)
-            : ch === ESCAPE_CHARACTER ? esc = true
-            : ch === delimiter ? res.push('')
-            : res[res.length-1] +=ch;
+    // @methodetype Helper-methode/conversion-method
+    private asUnmask(component: string): string{
+        let res = '';
+        
+        for(let i = 0; i<component.length; i++){
+            if(component[i] === ESCAPE_CHARACTER && i+1 < component.length){
+                res+=component[i+1];
+                i++
+            }else{
+                res+=component[i];
+            }
+        }
         return res;
     }
-    private escapeComponent(c: string): string {
-        return c.replaceAll(ESCAPE_CHARACTER, ESCAPE_CHARACTER + ESCAPE_CHARACTER).replace(this.delimiter, ESCAPE_CHARACTER + this.delimiter);
+    // @methodetype Helper-methode/conversion-method
+    private asMask(str: string, delimiter: string): string{
+        let res= '';
+
+        for (const char of str){
+            if(char === delimiter || char === ESCAPE_CHARACTER){
+                res += ESCAPE_CHARACTER + char;
+            }else{
+                res += char;
+            }
+        }
+        return res;
     }
-    private indexBouncerDetector(i: number): void{
+
+    // @methodetype Assertion Method
+    protected indexBouncerDetector(i: number): void{
         if(i < 0 || i >= this.components.length){
-            throw new RangeError(`Index ${i} out of bounds`);   
+            throw new RangeError(`Index ${i} out of bounds for Name with ${this.components.length} components`);   
         }
     }
 
