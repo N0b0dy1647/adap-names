@@ -1,71 +1,121 @@
 import { DEFAULT_DELIMITER, ESCAPE_CHARACTER } from "../common/Printable";
-import { Name } from "./Name";
 import { AbstractName } from "./AbstractName";
+import { Name } from "./Name";
 
 export class StringName extends AbstractName {
-
     protected name: string = "";
     protected noComponents: number = 0;
 
     constructor(source: string, delimiter?: string) {
-        super();
-        throw new Error("needs implementation or deletion");
+        super(delimiter);
+        this.name = source;
+        
+        if (source === "") {
+            
+            this.noComponents = 1;
+        } else {
+            
+            this.noComponents = this.parseComponents(source).length;
+        }
+    }
+
+    private parseComponents(str: string): string[] {
+        if (str === "") {
+            return [""];
+        }
+        
+        const components: string[] = [];
+        let current = "";
+        let i = 0;
+        
+        while (i < str.length) {
+            if (str[i] === ESCAPE_CHARACTER && i + 1 < str.length) {
+                
+                current += str[i] + str[i + 1];
+                i += 2;
+            } else if (str[i] === this.delimiter) {
+                
+                components.push(current);
+                current = "";
+                i++;
+            } else {
+                
+                current += str[i];
+                i++;
+            }
+        }
+        components.push(current);
+        
+        return components;
     }
 
     public clone(): Name {
-        throw new Error("needs implementation or deletion");
-    }
-
-    public asString(delimiter: string = this.delimiter): string {
-        throw new Error("needs implementation or deletion");
-    }
-
-    public asDataString(): string {
-        throw new Error("needs implementation or deletion");
-    }
-
-    public isEqual(other: Name): boolean {
-        throw new Error("needs implementation or deletion");
-    }
-
-    public getHashCode(): number {
-        throw new Error("needs implementation or deletion");
-    }
-
-    public isEmpty(): boolean {
-        throw new Error("needs implementation or deletion");
-    }
-
-    public getDelimiterCharacter(): string {
-        throw new Error("needs implementation or deletion");
+        return new StringName(this.name, this.delimiter);
     }
 
     public getNoComponents(): number {
-        throw new Error("needs implementation or deletion");
+        return this.noComponents;
     }
 
     public getComponent(i: number): string {
-        throw new Error("needs implementation or deletion");
+       this.checkRangeErrEqual(i);
+        return this.parseComponents(this.name)[i];
     }
 
-    public setComponent(i: number, c: string) {
-        throw new Error("needs implementation or deletion");
+    public setComponent(i: number, c: string): void {
+        this.checkRangeAndTypeErrEqual(i,c)
+        const components = this.parseComponents(this.name);
+        
+        components[i] = c.replaceAll(ESCAPE_CHARACTER, ESCAPE_CHARACTER + ESCAPE_CHARACTER)
+                         .replaceAll(this.delimiter, ESCAPE_CHARACTER + this.delimiter);
+        this.rebuildFromComponents(components);
     }
 
-    public insert(i: number, c: string) {
-        throw new Error("needs implementation or deletion");
+    public insert(i: number, c: string): void {
+        this.checkRangeAndTypeErr(i, c);
+        const components = this.parseComponents(this.name);
+        
+        const escaped = c.replaceAll(ESCAPE_CHARACTER, ESCAPE_CHARACTER + ESCAPE_CHARACTER)
+                         .replaceAll(this.delimiter, ESCAPE_CHARACTER + this.delimiter);
+        components.splice(i, 0, escaped);
+        this.rebuildFromComponents(components);
     }
 
-    public append(c: string) {
-        throw new Error("needs implementation or deletion");
+    public append(c: string): void {
+        this.checkTypeErr(c);
+        
+        
+        if (this.noComponents === 0) {
+            const escaped = c.replaceAll(ESCAPE_CHARACTER, ESCAPE_CHARACTER + ESCAPE_CHARACTER)
+                             .replaceAll(this.delimiter, ESCAPE_CHARACTER + this.delimiter);
+            this.name = escaped;
+            this.noComponents = 1;
+            return;
+        }
+        
+        const components = this.parseComponents(this.name);
+
+        const escaped = c.replaceAll(ESCAPE_CHARACTER, ESCAPE_CHARACTER + ESCAPE_CHARACTER)
+                         .replaceAll(this.delimiter, ESCAPE_CHARACTER + this.delimiter);
+        components.push(escaped);
+        this.rebuildFromComponents(components);
     }
 
-    public remove(i: number) {
-        throw new Error("needs implementation or deletion");
+    public remove(i: number): void {
+        this.checkRangeErrEqual(i);
+        const components = this.parseComponents(this.name);
+        components.splice(i, 1);
+        
+        if (components.length === 0) {
+            this.name = "";
+            this.noComponents = 0;
+        } else {
+            this.rebuildFromComponents(components);
+        }
     }
 
-    public concat(other: Name): void {
-        throw new Error("needs implementation or deletion");
+    private rebuildFromComponents(components: string[]): void {
+        this.name = components.join(this.delimiter);
+        this.noComponents = components.length;
     }
-
 }
