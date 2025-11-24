@@ -84,8 +84,8 @@ export abstract class AbstractName implements Name {
         const str = this.asDataString();
         for (let i = 0; i < str.length; i++) {
             const char = str.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash;
+            hash = (hash << 5) - hash + char;
+            hash = hash |= 0;
         }
         return hash;
     }
