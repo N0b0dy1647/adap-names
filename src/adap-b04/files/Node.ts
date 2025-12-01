@@ -1,14 +1,17 @@
 import { Name } from "../names/Name";
 import { Directory } from "./Directory";
+import { IllegalArgumentException } from "../common/IllegalArgumentException";
 
 export class Node {
-
     protected baseName: string = "";
     protected parentNode: Directory;
 
     constructor(bn: string, pn: Directory) {
+        this.validateConstructorArguments(bn);
+        IllegalArgumentException.assert(pn != null, "parent node cannot be null or undefined");
+        
         this.doSetBaseName(bn);
-        this.parentNode = pn; // why oh why do I have to set this
+        this.parentNode = pn;
         this.initialize(pn);
     }
 
@@ -18,6 +21,7 @@ export class Node {
     }
 
     public move(to: Directory): void {
+        IllegalArgumentException.assert(to !== null, "target directory must not be null");
         this.parentNode.removeChildNode(this);
         to.addChildNode(this);
         this.parentNode = to;
@@ -38,6 +42,9 @@ export class Node {
     }
 
     public rename(bn: string): void {
+        IllegalArgumentException.assert(bn !== null, "base name must not be null");
+        IllegalArgumentException.assert(bn !== undefined, "base name must be defined");
+        IllegalArgumentException.assert(bn.length > 0, "base name must not be empty");
         this.doSetBaseName(bn);
     }
 
@@ -49,4 +56,10 @@ export class Node {
         return this.parentNode;
     }
 
+    protected validateConstructorArguments(baseName: string): void {
+        IllegalArgumentException.assert(baseName != null, "base name cannot be null or undefined");
+        IllegalArgumentException.assert(baseName.length > 0, "base name cannot be empty");
+        IllegalArgumentException.assert(!baseName.includes("/"), "base name cannot contain directory separator '/'");
+        IllegalArgumentException.assert(!baseName.includes("\0"), "base name cannot contain null byte");
+    }
 }
