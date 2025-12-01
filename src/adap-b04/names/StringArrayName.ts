@@ -2,6 +2,7 @@ import { DEFAULT_DELIMITER, ESCAPE_CHARACTER } from "../common/Printable";
 import { Name } from "./Name";
 import { AbstractName } from "./AbstractName";
 import { IllegalArgumentException } from "../common/IllegalArgumentException";
+import { MethodFailedException } from "../common/MethodFailedException";
 
 export class StringArrayName extends AbstractName {
     protected components: string[] = [];
@@ -127,10 +128,8 @@ export class StringArrayName extends AbstractName {
         
         const result = this.components.join(DEFAULT_DELIMITER);
         
-        
-        if (result === null || result === undefined) {
-            throw new Error("Postcondition violated: asDataString returned null or undefined");
-        }
+        MethodFailedException.assert(!(result === null || result === undefined), "Postcondition violated: asDataString returned null or undefined")
+     
         
         this.assertClassInvariants();
         return result;
