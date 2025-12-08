@@ -45,6 +45,8 @@ export class Node {
         IllegalArgumentException.assert(bn !== null, "base name must not be null");
         IllegalArgumentException.assert(bn !== undefined, "base name must be defined");
         IllegalArgumentException.assert(bn.length > 0, "base name must not be empty");
+        IllegalArgumentException.assert(!bn.includes("/"), "base name cannot contain directory separator '/'");
+        IllegalArgumentException.assert(!bn.includes("\0"), "base name cannot contain null byte");
         this.doSetBaseName(bn);
     }
 
@@ -57,8 +59,9 @@ export class Node {
     }
 
     protected validateConstructorArguments(baseName: string): void {
-        IllegalArgumentException.assert(baseName != null, "base name cannot be null or undefined");
-        IllegalArgumentException.assert(baseName.length > 0, "base name cannot be empty");
+        IllegalArgumentException.assert(baseName !== null, "base name must not be null");
+        IllegalArgumentException.assert(baseName !== undefined, "base name must be defined");
+        IllegalArgumentException.assert(baseName.length > 0, "base name must not be empty");
         IllegalArgumentException.assert(!baseName.includes("/"), "base name cannot contain directory separator '/'");
         IllegalArgumentException.assert(!baseName.includes("\0"), "base name cannot contain null byte");
     }

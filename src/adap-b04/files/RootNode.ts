@@ -21,18 +21,25 @@ export class RootNode extends Directory {
     public getFullName(): Name {
         return new StringName("", '/');
     }
-
+    
     public move(to: Directory): void {
         // null operation
     }
-
+    public rename(bn: string): void {
+        IllegalArgumentException.assert(bn !== null, "base name must not be null");
+        IllegalArgumentException.assert(bn !== undefined, "base name must be defined");
+        IllegalArgumentException.assert(bn === "", "RootNode can only be renamed to empty string");
+        // doSetBaseName() ist eine null-operation für RootNode
+    }
     protected doSetBaseName(bn: string): void {
         // null operation
     }
 
     protected validateConstructorArguments(bn: string): void {
         IllegalArgumentException.assert(bn != null, "base name cannot be null or undefined");
-        IllegalArgumentException.assert(bn === "", "RootNode base name must be empty");
+        IllegalArgumentException.assert(!(bn.length > 0), "bases name cannot be empty");
+        IllegalArgumentException.assert(!bn.includes("/"), "base name cannot contain directory separator '/'");
+        IllegalArgumentException.assert(!bn.includes("\0"), "base name cannot contain null byte");
     }
 
 }

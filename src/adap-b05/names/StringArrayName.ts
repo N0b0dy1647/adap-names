@@ -1,69 +1,137 @@
 import { DEFAULT_DELIMITER, ESCAPE_CHARACTER } from "../common/Printable";
 import { Name } from "./Name";
 import { AbstractName } from "./AbstractName";
+import { IllegalArgumentException } from "../common/IllegalArgumentException";
+import { MethodFailedException } from "../common/MethodFailedException";
 
 export class StringArrayName extends AbstractName {
-
     protected components: string[] = [];
-
+    
     constructor(source: string[], delimiter?: string) {
-        super();
-        throw new Error("needs implementation or deletion");
+        
+        IllegalArgumentException.assert(
+            source !== null && source !== undefined,
+            "Source array cannot be null or undefined"
+        );
+        
+        
+        if (delimiter !== undefined) {
+            IllegalArgumentException.assert(
+                delimiter !== null && delimiter.length === 1,
+                "Delimiter must be exactly one character"
+            );
+        }
+        
+        super(delimiter);
+        
+        
+        this.components = [...source];
+        
+        
+        for (let i = 0; i < this.components.length; i++) {
+            IllegalArgumentException.assert(
+                this.components[i] !== null && this.components[i] !== undefined,
+                `Component at index ${i} cannot be null or undefined`
+            );
+            
+            
+            this.validateComponentMasking(this.components[i]);
+        }
+        
+        
+        this.assertClassInvariants();
     }
-
+    
+  
+    private validateComponentMasking(component: string): void {
+        let i = 0;
+        while (i < component.length) {
+            if (component[i] === ESCAPE_CHARACTER) {
+                
+                IllegalArgumentException.assert(
+                    i + 1 < component.length,
+                    "Component contains dangling escape character"
+                );
+                i += 2; 
+            } else {
+                
+                IllegalArgumentException.assert(
+                    component[i] !== this.delimiter,
+                    "Component contains unmasked delimiter"
+                );
+                i++;
+            }
+        }
+    }
+    
     public clone(): Name {
-        throw new Error("needs implementation or deletion");
+        return new StringArrayName([...this.components], this.delimiter);
     }
-
-    public asString(delimiter: string = this.delimiter): string {
-        throw new Error("needs implementation or deletion");
-    }
-
-    public asDataString(): string {
-        throw new Error("needs implementation or deletion");
-    }
-
-    public isEqual(other: Name): boolean {
-        throw new Error("needs implementation or deletion");
-    }
-
-    public getHashCode(): number {
-        throw new Error("needs implementation or deletion");
-    }
-
-    public isEmpty(): boolean {
-        throw new Error("needs implementation or deletion");
-    }
-
-    public getDelimiterCharacter(): string {
-        throw new Error("needs implementation or deletion");
-    }
-
+    
     public getNoComponents(): number {
-        throw new Error("needs implementation or deletion");
+        return this.components.length;
     }
-
+    
     public getComponent(i: number): string {
-        throw new Error("needs implementation or deletion");
+        this.checkRangeErrEqual(i);
+        return this.components[i];
     }
-
-    public setComponent(i: number, c: string) {
-        throw new Error("needs implementation or deletion");
+    
+    public setComponent(i: number, c: string): void {
+        this.checkRangeAndTypeErrEqual(i, c);
+        
+        
+        this.validateComponentMasking(c);
+        
+        this.components[i] = c;
+        
+        
+        this.assertClassInvariants();
     }
-
-    public insert(i: number, c: string) {
-        throw new Error("needs implementation or deletion");
+    
+    public insert(i: number, c: string): void {
+        this.checkRangeAndTypeErr(i, c);
+        
+        
+        this.validateComponentMasking(c);
+        
+        this.components.splice(i, 0, c);
+        
+        
+        this.assertClassInvariants();
     }
-
-    public append(c: string) {
-        throw new Error("needs implementation or deletion");
+    
+    public append(c: string): void {
+        this.checkTypeErr(c);
+        
+        
+        this.validateComponentMasking(c);
+        
+        this.components.push(c);
+        
+        
+        this.assertClassInvariants();
     }
-
-    public remove(i: number) {
-        throw new Error("needs implementation or deletion");
+    
+    public remove(i: number): void {
+        this.checkRangeErrEqual(i);
+        this.components.splice(i, 1);
+        
+        
+        this.assertClassInvariants();
     }
-
-    public concat(other: Name): void {
-        throw new Error("needs implementation or deletion");
+    
+    
+    public asDataString(): string {
+        this.assertClassInvariants();
+        
+        
+        const result = this.components.join(DEFAULT_DELIMITER);
+        
+        MethodFailedException.assert(!(result === null || result === undefined), "Postcondition violated: asDataString returned null or undefined")
+     
+        
+        this.assertClassInvariants();
+        return result;
     }
 }
